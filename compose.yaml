@@ -1,0 +1,111 @@
+
+services:
+  db-programa:
+    image: 'postgres:latest'
+    environment:
+      POSTGRES_DB: curso_springboot
+      POSTGRES_PASSWORD: a1b2c3d4
+      POSTGRES_USER: devdb
+    volumes:
+      - ./data/db-programa:/var/lib/postgresql/data
+    ports:
+      - '54321:5432'
+    networks:
+      - red-backend-app
+
+  db-facultad:
+    image: 'postgres:latest'
+    environment:
+      POSTGRES_DB: curso_springboot
+      POSTGRES_USER: devdb
+      POSTGRES_PASSWORD: a1b2c3d4
+    volumes:
+      - ./data/db-facultad:/var/lib/postgresql/data
+    ports:
+      - "54322:5432"
+    networks:
+      - red-backend-app
+  db-asignatura:
+    image: 'postgres:latest'
+    environment:
+      POSTGRES_DB: curso_springboot
+      POSTGRES_USER: devdb
+      POSTGRES_PASSWORD: a1b2c3d4
+    volumes:
+      - ./data/db-asignatura:/var/lib/postgresql/data
+    ports:
+      - "54323:5432"
+    networks:
+      - red-backend-app
+  db-ova:
+    image: 'postgres:latest'
+    environment:
+      POSTGRES_DB: curso_springboot
+      POSTGRES_USER: devdb
+      POSTGRES_PASSWORD: a1b2c3d4
+    volumes:
+      - ./data/db-ova:/var/lib/postgresql/data
+    ports:
+      - "54324:5432"
+    networks:
+      - red-backend-app
+  servicio-facultad:
+    image: 'alexvarela5270/facultad-service:latest'
+    ports:
+      - '8087:8080'
+    environment:
+       DB_URL: jdbc:postgresql://db-facultad/curso_springboot
+       DB_USERNAME: devdb
+       DB_PASSWORD: a1b2c3d4
+       JPA_DDL: update
+       SERVER_PORT: 8080
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.posts.rule=(Host(`localhost`) || Host(`app.dominio.com`) || Host(`10.3.3.4`)) && (PathPrefix(`/post/{id:[0-9]+}`)||\
+                                                               PathPrefix(`/api/facultad-service/facultad`)||\
+                                                               PathPrefix(`/api/facultad-service/facultad//{id:[0-9]+}`))"
+              )"
+      - "traefik.http.routers.usuarios.entrypoints=web"
+
+    depends_on:
+      - db-facultad
+    networks:
+      - red-backend-app
+
+  auth-service:
+    image: 'alvarosalazar/auth-service:latest'
+    ports:
+      - '8081:8080'
+    depends_on:
+      - db2
+    environment:
+      DB_URL: jdbc:postgresql://db2/curso_springboot
+      DB_USERNAME: devdb
+      DB_PASSWORD: a1b2c3d4
+      JPA_DDL: create-drop
+    networks:
+      - red-backend-app
+  traefik:
+    image: "traefik:v2.5"
+    container_name: "traefik"
+    command:
+      - "--api.insecure=true"
+      - "--providers.docker=true"
+      - "--providers.docker.exposedbydefault=false"
+      - "--entrypoints.web.address=:80"
+    ports:
+      - "80:80"
+      - "8080:8080"
+      - "444:443"  # Puerto HTTPS
+    volumes:
+      - "/var/run/docker.sock:/var/run/docker.sock"
+#      - "./traefik/traefik.toml:/traefik.toml"
+#      - "./traefik/acme.json:/acme.json"
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.api.rule=Host(`localhost`) && (PathPrefix(`/api`) || PathPrefix(`/dashboard`))"
+      - "traefik.http.routers.api.entrypoints=web"
+
+networks:
+  red-backend-app:
+    driver: bridge
