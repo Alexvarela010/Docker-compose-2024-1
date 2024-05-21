@@ -87,8 +87,8 @@ services:
                                                                PathPrefix(`/api/programa/programas`)||\
                                                                PathPrefix(`/api/programa/create`)||\
                                                                PathPrefix(`/api/programa/update`)||\
-                                                               PathPrefix(`/api/programa/delete/{id:[0-9]+}`)||
-                                                               PathPrefix(`/api/programa/programas/{id:[0-9]+}`)||
+                                                               PathPrefix(`/api/programa/delete/{id:[0-9]+}`)||\
+                                                               PathPrefix(`/api/programa/programas/{id:[0-9]+}`)
                                                                )"
       - "traefik.http.routers.usuarios.entrypoints=web"
 
