@@ -49,12 +49,60 @@ services:
       - "54324:5432"
     networks:
       - red-backend-app
-  servicio-facultad:
-    image: 'alexvarela5270/facultad-service:latest'
+servicio-facultad:
+  image: 'alexvarela5270/facultad-service:latest'
+  ports:
+    - '8087:8080'
+  environment:
+    DB_URL: jdbc:postgresql://db-facultad/curso_springboot
+    DB_USERNAME: devdb
+    DB_PASSWORD: a1b2c3d4
+    JPA_DDL: update
+    SERVER_PORT: 8080
+  labels:
+    - "traefik.enable=true"
+    - "traefik.http.routers.posts.rule=(Host(`localhost`) || Host(`app.dominio.com`) || Host(`10.3.3.4`)) && (PathPrefix(`/post/{id:[0-9]+}`)||\
+                                                               PathPrefix(`/api/facultad-service/facultad`)||\
+                                                               PathPrefix(`/api/facultad-service/facultad/{id:[0-9]+}`))"
+    - "traefik.http.routers.usuarios.entrypoints=web"
+
+  depends_on:
+    - db-facultad
+  networks:
+    - red-backend-app
+
+  servicio-programa:
+    image: 'jsebastiancadena/programa-service:latest'
     ports:
-      - '8087:8080'
+      - '8086:8087'
     environment:
-       DB_URL: jdbc:postgresql://db-facultad/curso_springboot
+      DB_URL: jdbc:postgresql://db-programa/curso_springboot
+      DB_USERNAME: devdb
+      DB_PASSWORD: a1b2c3d4
+      JPA_DDL: update
+      SERVER_PORT: 8087
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.posts.rule=(Host(`localhost`) || Host(`app.dominio.com`) || Host(`10.3.3.4`)) && (PathPrefix(`/post/{id:[0-9]+}`)||\
+                                                               PathPrefix(`/api/programa/programas`)||\
+                                                               PathPrefix(`/api/programa/create`)||\
+                                                               PathPrefix(`/api/programa/update`)||\
+                                                               PathPrefix(`/api/programa/delete/{id:[0-9]+}`)||\
+                                                               PathPrefix(`/api/programa/programas/{id:[0-9]+}`)
+                                                               )"
+      - "traefik.http.routers.usuarios.entrypoints=web"
+
+    depends_on:
+      - db-programa
+    networks:
+      - red-backend-app
+
+  servicio-ova:
+    image: 'camilor18/ova-services:latest'
+    ports:
+      - '8085:8087'
+    environment:
+       DB_URL: jdbc:postgresql://db-ova/curso_springboot
        DB_USERNAME: devdb
        DB_PASSWORD: a1b2c3d4
        JPA_DDL: update
@@ -62,13 +110,16 @@ services:
     labels:
       - "traefik.enable=true"
       - "traefik.http.routers.posts.rule=(Host(`localhost`) || Host(`app.dominio.com`) || Host(`10.3.3.4`)) && (PathPrefix(`/post/{id:[0-9]+}`)||\
-                                                               PathPrefix(`/api/facultad-service/facultad`)||\
-                                                               PathPrefix(`/api/facultad-service/facultad//{id:[0-9]+}`))"
-              )"
+                                                               PathPrefix(`/api/ova-service/ova/listarova`)||\
+                                                               PathPrefix(`/api/ova-service/ova/guardarova`)||\
+                                                               PathPrefix(`/api/ova-service/ova/actualizarova`)||\
+                                                               PathPrefix(`/api/ova-service/ova/eliminarova//{id:[0-9]+}`)||\
+                                                               PathPrefix(`/api/ova-service/ova/buscarova//{id:[0-9]+}`))"
+
       - "traefik.http.routers.usuarios.entrypoints=web"
 
     depends_on:
-      - db-facultad
+      - db-ova
     networks:
       - red-backend-app
 
