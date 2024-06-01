@@ -135,3 +135,32 @@ services:
 networks:
   red-backend-app:
     driver: bridge
+
+
+cursoservice:
+    image: 'alvarosalazar/curso-back-service:latest'
+    container_name: cursoservice
+    build:
+       context: .
+    ports:
+        - '8082:8081'
+    depends_on:
+        - postgres
+    environment:
+        - SPRING_DATASOURCE_URL=jdbc:postgresql://postgres:5432/curso_spring>
+        - SPRING_DATASOURCE_USERNAME=devdb
+        - SPRING_DATASOURCE_PASSWORD=a1b2c3d4
+        - SPRING_JPA_HIBERNATE_DDL_AUTO=create-drop
+    networks:
+        - mi-red
+    labels:
+        - "traefik.enable=true"
+        - "traefik.http.routers.cursoservice.api.rule=(Host('localhost') || >"
+        - "traefik.http.routers.cursoservice.api.entrypoints=web"
+        - "traefik.http.services.curso-service.loadbalancer.server.port=8081"
+  postgres:
+    image: 'postgres:latest'
+    container_name: postgres
+    environment:
+        - 'POSTGRES_DB=curso_springboot'
+        - 'POSTGRES_PASSWORD=a1b2d3c4'
